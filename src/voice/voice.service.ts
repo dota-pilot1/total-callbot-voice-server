@@ -18,6 +18,12 @@ export class VoiceService {
     await this.roomManager.initialize();
   }
 
+  async getRouterRtpCapabilities(): Promise<RtpCapabilities> {
+    // 기본 방을 생성하거나 기존 방의 Router RTP Capabilities 반환
+    const room = await this.roomManager.getOrCreateRoom('default');
+    return room.router.rtpCapabilities;
+  }
+
   async joinRoom(roomId: string, peerId: string, userId: number) {
     const room = await this.roomManager.getOrCreateRoom(roomId);
     const peer = this.roomManager.addPeer(roomId, peerId, userId);

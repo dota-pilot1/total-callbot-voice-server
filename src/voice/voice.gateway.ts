@@ -6,6 +6,7 @@ import {
   OnGatewayDisconnect,
   MessageBody,
   ConnectedSocket,
+  Ack,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
@@ -53,16 +54,35 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('getRouterRtpCapabilities')
-  async handleGetRouterRtpCapabilities(@ConnectedSocket() client: Socket) {
+  async handleGetRouterRtpCapabilities(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: any,
+    @Ack() callback?: (response: any) => void,
+  ) {
     this.logger.log('📡 getRouterRtpCapabilities 요청 받음');
     try {
       const rtpCapabilities =
         await this.voiceService.getRouterRtpCapabilities();
       this.logger.log('✅ RTP Capabilities 응답 전송');
-      return { rtpCapabilities };
+
+      const response = { rtpCapabilities };
+
+      // 명시적으로 콜백 호출
+      if (callback && typeof callback === 'function') {
+        callback(response);
+      }
+
+      return response;
     } catch (error) {
       this.logger.error('❌ Error getting router RTP capabilities:', error);
-      return { error: error.message };
+
+      const errorResponse = { error: error.message };
+
+      if (callback && typeof callback === 'function') {
+        callback(errorResponse);
+      }
+
+      return errorResponse;
     }
   }
 

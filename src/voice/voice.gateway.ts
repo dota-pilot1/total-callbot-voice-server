@@ -55,11 +55,12 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('getRouterRtpCapabilities')
   async handleGetRouterRtpCapabilities(@ConnectedSocket() client: Socket) {
     try {
-      const rtpCapabilities = this.voiceService.getRouterRtpCapabilities();
-      return { success: true, rtpCapabilities };
+      const rtpCapabilities =
+        await this.voiceService.getRouterRtpCapabilities();
+      return { rtpCapabilities };
     } catch (error) {
       this.logger.error('Error getting router RTP capabilities:', error);
-      return { success: false, error: error.message };
+      return { error: error.message };
     }
   }
 

@@ -20,7 +20,11 @@ import type {
 
 @WebSocketGateway({
   cors: {
-    origin: 'http://localhost:5173', // 프론트엔드 주소
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'https://realtime-english-trainer.co.kr',
+    ],
     credentials: true,
   },
   namespace: '/voice',

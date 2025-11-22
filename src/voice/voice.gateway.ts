@@ -1,0 +1,200 @@
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  SubscribeMessage,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  MessageBody,
+  ConnectedSocket,
+} from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
+import { Logger } from '@nestjs/common';
+import { VoiceService } from './voice.service';
+import type {
+  DtlsParameters,
+  MediaKind,
+  RtpCapabilities,
+  RtpParameters,
+} from 'mediasoup/types';
+
+@WebSocketGateway({
+  cors: {
+    origin: 'http://localhost:5173', // 프론트엔드 주소
+    credentials: true,
+  },
+  namespace: '/voice',
+})
+export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  @WebSocketServer()
+  server: Server;
+
+  private readonly logger = new Logger(VoiceGateway.name);
+
+  // Socket to Room mapping
+  private socketToRoom: Map<string, string> = new Map();
+
+  constructor(private readonly voiceService: VoiceService) {}
+
+  handleConnection(client: Socket) {
+    this.logger.log(`Client connected: ${client.id}`);
+  }
+
+  handleDisconnect(client: Socket) {
+    this.logger.log(`Client disconnected: ${client.id}`);
+
+    const roomId = this.socketToRoom.get(client.id);
+    if (roomId) {
+      this.voiceService.leaveRoom(roomId, client.id);
+      this.socketToRoom.delete(client.id);
+
+      // Notify others in the room
+      client.to(roomId).emit('peer-left', { peerId: client.id });
+    }
+  }
+
+  @SubscribeMessage('join-room')
+  async handleJoinRoom(
+    @MessageBody()
+    data: { roomId: string; userId: number },
+    @ConnectedSocket() client: Socket,
+  ) {
+    try {
+      const { roomId, userId } = data;
+
+      const result = await this.voiceService.joinRoom(
+        roomId,
+        client.id,
+        userId,
+      );
+
+      // Join Socket.IO room
+      client.join(roomId);
+      this.socketToRoom.set(client.id, roomId);
+
+      // Notify others
+      client.to(roomId).emit('peer-joined', {
+        peerId: client.id,
+        userId,
+      });
+
+      // Get existing producers
+      const producers = this.voiceService.getProducers(roomId, client.id);
+
+      return {
+        success: true,
+        rtpCapabilities: result.rtpCapabilities,
+        producers,
+      };
+    } catch (error) {
+      this.logger.error('Error joining room:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  @SubscribeMessage('create-transport')
+  async handleCreateTransport(
+    @MessageBody() data: { roomId: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    try {
+      const { roomId } = data;
+      const result = await this.voiceService.createWebRtcTransport(
+        roomId,
+        client.id,
+      );
+
+      return { success: true, ...result };
+    } catch (error) {
+      this.logger.error('Error creating transport:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  @SubscribeMessage('connect-transport')
+  async handleConnectTransport(
+    @MessageBody()
+    data: {
+      roomId: string;
+      transportId: string;
+      dtlsParameters: DtlsParameters;
+    },
+    @ConnectedSocket() client: Socket,
+  ) {
+    try {
+      const { roomId, transportId, dtlsParameters } = data;
+      await this.voiceService.connectWebRtcTransport(
+        roomId,
+        client.id,
+        transportId,
+        dtlsParameters,
+      );
+
+      return { success: true };
+    } catch (error) {
+      this.logger.error('Error connecting transport:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  @SubscribeMessage('produce')
+  async handleProduce(
+    @MessageBody()
+    data: {
+      roomId: string;
+      transportId: string;
+      kind: MediaKind;
+      rtpParameters: RtpParameters;
+    },
+    @ConnectedSocket() client: Socket,
+  ) {
+    try {
+      const { roomId, transportId, kind, rtpParameters } = data;
+      const result = await this.voiceService.produce(
+        roomId,
+        client.id,
+        transportId,
+        kind,
+        rtpParameters,
+      );
+
+      // Notify other peers
+      client.to(roomId).emit('new-producer', {
+        peerId: client.id,
+        producerId: result.producerId,
+      });
+
+      return { success: true, producerId: result.producerId };
+    } catch (error) {
+      this.logger.error('Error producing:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  @SubscribeMessage('consume')
+  async handleConsume(
+    @MessageBody()
+    data: {
+      roomId: string;
+      transportId: string;
+      producerId: string;
+      rtpCapabilities: RtpCapabilities;
+    },
+    @ConnectedSocket() client: Socket,
+  ) {
+    try {
+      const { roomId, transportId, producerId, rtpCapabilities } = data;
+      const result = await this.voiceService.consume(
+        roomId,
+        client.id,
+        transportId,
+        producerId,
+        rtpCapabilities,
+      );
+
+      return { success: true, ...result };
+    } catch (error) {
+      this.logger.error('Error consuming:', error);
+      return { success: false, error: error.message };
+    }
+  }
+}

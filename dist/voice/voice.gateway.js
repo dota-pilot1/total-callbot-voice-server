@@ -38,16 +38,24 @@ let VoiceGateway = VoiceGateway_1 = class VoiceGateway {
             client.to(roomId).emit('peer-left', { peerId: client.id });
         }
     }
-    async handleGetRouterRtpCapabilities(client) {
+    async handleGetRouterRtpCapabilities(client, data, callback) {
         this.logger.log('📡 getRouterRtpCapabilities 요청 받음');
         try {
             const rtpCapabilities = await this.voiceService.getRouterRtpCapabilities();
             this.logger.log('✅ RTP Capabilities 응답 전송');
-            return { rtpCapabilities };
+            const response = { rtpCapabilities };
+            if (callback && typeof callback === 'function') {
+                callback(response);
+            }
+            return response;
         }
         catch (error) {
             this.logger.error('❌ Error getting router RTP capabilities:', error);
-            return { error: error.message };
+            const errorResponse = { error: error.message };
+            if (callback && typeof callback === 'function') {
+                callback(errorResponse);
+            }
+            return errorResponse;
         }
     }
     async handleJoinRoom(data, client) {
@@ -129,8 +137,10 @@ __decorate([
 __decorate([
     (0, websockets_1.SubscribeMessage)('getRouterRtpCapabilities'),
     __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
+    __param(2, (0, websockets_1.Ack)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [socket_io_1.Socket]),
+    __metadata("design:paramtypes", [socket_io_1.Socket, Object, Function]),
     __metadata("design:returntype", Promise)
 ], VoiceGateway.prototype, "handleGetRouterRtpCapabilities", null);
 __decorate([
@@ -176,10 +186,13 @@ __decorate([
 exports.VoiceGateway = VoiceGateway = VoiceGateway_1 = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {
-            origin: 'http://localhost:5173',
+            origin: [
+                'http://localhost:5173',
+                'http://localhost:5174',
+                'https://realtime-english-trainer.co.kr',
+            ],
             credentials: true,
         },
-        namespace: '/voice',
     }),
     __metadata("design:paramtypes", [voice_service_1.VoiceService])
 ], VoiceGateway);

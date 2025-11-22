@@ -27,7 +27,6 @@ import type {
     ],
     credentials: true,
   },
-  namespace: '/voice',
 })
 export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()

@@ -23,6 +23,10 @@ let VoiceService = VoiceService_1 = class VoiceService {
     async onModuleInit() {
         await this.roomManager.initialize();
     }
+    async getRouterRtpCapabilities() {
+        const room = await this.roomManager.getOrCreateRoom('default');
+        return room.router.rtpCapabilities;
+    }
     async joinRoom(roomId, peerId, userId) {
         const room = await this.roomManager.getOrCreateRoom(roomId);
         const peer = this.roomManager.addPeer(roomId, peerId, userId);

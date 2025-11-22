@@ -10,6 +10,13 @@ export declare class VoiceGateway implements OnGatewayConnection, OnGatewayDisco
     constructor(voiceService: VoiceService);
     handleConnection(client: Socket): void;
     handleDisconnect(client: Socket): void;
+    handleGetRouterRtpCapabilities(client: Socket): Promise<{
+        rtpCapabilities: RtpCapabilities;
+        error?: undefined;
+    } | {
+        error: any;
+        rtpCapabilities?: undefined;
+    }>;
     handleJoinRoom(data: {
         roomId: string;
         userId: number;

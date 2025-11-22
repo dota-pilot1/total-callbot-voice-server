@@ -38,6 +38,18 @@ let VoiceGateway = VoiceGateway_1 = class VoiceGateway {
             client.to(roomId).emit('peer-left', { peerId: client.id });
         }
     }
+    async handleGetRouterRtpCapabilities(client) {
+        this.logger.log('📡 getRouterRtpCapabilities 요청 받음');
+        try {
+            const rtpCapabilities = await this.voiceService.getRouterRtpCapabilities();
+            this.logger.log('✅ RTP Capabilities 응답 전송');
+            return { rtpCapabilities };
+        }
+        catch (error) {
+            this.logger.error('❌ Error getting router RTP capabilities:', error);
+            return { error: error.message };
+        }
+    }
     async handleJoinRoom(data, client) {
         try {
             const { roomId, userId } = data;
@@ -114,6 +126,13 @@ __decorate([
     (0, websockets_1.WebSocketServer)(),
     __metadata("design:type", socket_io_1.Server)
 ], VoiceGateway.prototype, "server", void 0);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('getRouterRtpCapabilities'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket]),
+    __metadata("design:returntype", Promise)
+], VoiceGateway.prototype, "handleGetRouterRtpCapabilities", null);
 __decorate([
     (0, websockets_1.SubscribeMessage)('join-room'),
     __param(0, (0, websockets_1.MessageBody)()),

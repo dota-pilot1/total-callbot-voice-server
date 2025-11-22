@@ -5,6 +5,7 @@ export declare class VoiceService {
     private readonly logger;
     constructor(roomManager: RoomManager);
     onModuleInit(): Promise<void>;
+    getRouterRtpCapabilities(): Promise<RtpCapabilities>;
     joinRoom(roomId: string, peerId: string, userId: number): Promise<{
         rtpCapabilities: RtpCapabilities;
     }>;

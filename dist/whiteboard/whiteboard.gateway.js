@@ -100,6 +100,15 @@ let WhiteboardGateway = WhiteboardGateway_1 = class WhiteboardGateway {
         this.logger.log(`[Whiteboard] Canvas cleared in room ${roomId}`);
         return { success: true };
     }
+    handleSync(payload, client) {
+        const roomId = this.socketToRoom.get(client.id);
+        if (!roomId)
+            return { success: false, error: 'Not in a room' };
+        this.roomCanvasState.set(roomId, payload.canvasState);
+        client.to(`wb-${roomId}`).emit('wb-sync', payload);
+        this.logger.log(`[Whiteboard] Canvas synced in room ${roomId}, objects: ${payload.canvasState.length}`);
+        return { success: true };
+    }
 };
 exports.WhiteboardGateway = WhiteboardGateway;
 __decorate([
@@ -152,6 +161,14 @@ __decorate([
     __metadata("design:paramtypes", [socket_io_1.Socket]),
     __metadata("design:returntype", void 0)
 ], WhiteboardGateway.prototype, "handleClear", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('wb-sync'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
+    __metadata("design:returntype", void 0)
+], WhiteboardGateway.prototype, "handleSync", null);
 exports.WhiteboardGateway = WhiteboardGateway = WhiteboardGateway_1 = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {

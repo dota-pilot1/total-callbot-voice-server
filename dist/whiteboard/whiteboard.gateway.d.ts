@@ -51,5 +51,14 @@ export declare class WhiteboardGateway implements OnGatewayConnection, OnGateway
         success: boolean;
         error?: undefined;
     };
+    handleSync(payload: {
+        canvasState: WhiteboardObject[];
+    }, client: Socket): {
+        success: boolean;
+        error: string;
+    } | {
+        success: boolean;
+        error?: undefined;
+    };
 }
 export {};

@@ -171,4 +171,24 @@ export class WhiteboardGateway
     this.logger.log(`[Whiteboard] Canvas cleared in room ${roomId}`);
     return { success: true };
   }
+
+  @SubscribeMessage('wb-sync')
+  handleSync(
+    @MessageBody() payload: { canvasState: WhiteboardObject[] },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const roomId = this.socketToRoom.get(client.id);
+    if (!roomId) return { success: false, error: 'Not in a room' };
+
+    // 서버 상태 업데이트
+    this.roomCanvasState.set(roomId, payload.canvasState);
+
+    // 다른 참여자에게 전체 상태 브로드캐스트
+    client.to(`wb-${roomId}`).emit('wb-sync', payload);
+
+    this.logger.log(
+      `[Whiteboard] Canvas synced in room ${roomId}, objects: ${payload.canvasState.length}`,
+    );
+    return { success: true };
+  }
 }

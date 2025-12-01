@@ -6,20 +6,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppModule = void 0;
+exports.WhiteboardModule = void 0;
 const common_1 = require("@nestjs/common");
-const app_controller_1 = require("./app.controller");
-const app_service_1 = require("./app.service");
-const voice_module_1 = require("./voice/voice.module");
-const whiteboard_module_1 = require("./whiteboard/whiteboard.module");
-let AppModule = class AppModule {
+const whiteboard_gateway_1 = require("./whiteboard.gateway");
+let WhiteboardModule = class WhiteboardModule {
 };
-exports.AppModule = AppModule;
-exports.AppModule = AppModule = __decorate([
+exports.WhiteboardModule = WhiteboardModule;
+exports.WhiteboardModule = WhiteboardModule = __decorate([
     (0, common_1.Module)({
-        imports: [voice_module_1.VoiceModule, whiteboard_module_1.WhiteboardModule],
-        controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
+        providers: [whiteboard_gateway_1.WhiteboardGateway],
+        exports: [whiteboard_gateway_1.WhiteboardGateway],
     })
-], AppModule);
-//# sourceMappingURL=app.module.js.map
+], WhiteboardModule);
+//# sourceMappingURL=whiteboard.module.js.map

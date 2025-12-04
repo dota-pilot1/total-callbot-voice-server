@@ -171,6 +171,20 @@ export class VoiceService {
     this.roomManager.removePeer(roomId, peerId);
   }
 
+  async closeProducer(roomId: string, peerId: string, producerId: string) {
+    const peer = this.roomManager.getPeer(roomId, peerId);
+    if (!peer) {
+      throw new Error('Peer not found');
+    }
+
+    const producer = peer.producers.get(producerId);
+    if (producer) {
+      producer.close();
+      peer.producers.delete(producerId);
+      this.logger.log(`Producer ${producerId} closed for peer ${peerId}`);
+    }
+  }
+
   getProducers(roomId: string, peerId: string) {
     const otherPeers = this.roomManager.getOtherPeers(roomId, peerId);
     const producers: Array<{

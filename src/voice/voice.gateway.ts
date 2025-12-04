@@ -223,6 +223,37 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  @SubscribeMessage('close-producer')
+  async handleCloseProducer(
+    @MessageBody()
+    data: {
+      roomId: string;
+      producerId: string;
+    },
+    @ConnectedSocket() client: Socket,
+  ) {
+    try {
+      const { roomId, producerId } = data;
+      const userName = this.voiceService.getUserName(roomId, client.id);
+
+      await this.voiceService.closeProducer(roomId, client.id, producerId);
+
+      // Notify other peers
+      client.to(roomId).emit('producer-closed', {
+        peerId: client.id,
+        producerId,
+        userName,
+      });
+
+      this.logger.log(`Producer 종료: ${userName} (${producerId})`);
+
+      return { success: true };
+    } catch (error) {
+      this.logger.error('Error closing producer:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   @SubscribeMessage('consume')
   async handleConsume(
     @MessageBody()

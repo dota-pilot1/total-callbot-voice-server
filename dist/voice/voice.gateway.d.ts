@@ -73,6 +73,16 @@ export declare class VoiceGateway implements OnGatewayConnection, OnGatewayDisco
         error: any;
         producerId?: undefined;
     }>;
+    handleCloseProducer(data: {
+        roomId: string;
+        producerId: string;
+    }, client: Socket): Promise<{
+        success: boolean;
+        error?: undefined;
+    } | {
+        success: boolean;
+        error: any;
+    }>;
     handleConsume(data: {
         roomId: string;
         transportId: string;

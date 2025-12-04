@@ -124,6 +124,24 @@ let VoiceGateway = VoiceGateway_1 = class VoiceGateway {
             return { success: false, error: error.message };
         }
     }
+    async handleCloseProducer(data, client) {
+        try {
+            const { roomId, producerId } = data;
+            const userName = this.voiceService.getUserName(roomId, client.id);
+            await this.voiceService.closeProducer(roomId, client.id, producerId);
+            client.to(roomId).emit('producer-closed', {
+                peerId: client.id,
+                producerId,
+                userName,
+            });
+            this.logger.log(`Producer 종료: ${userName} (${producerId})`);
+            return { success: true };
+        }
+        catch (error) {
+            this.logger.error('Error closing producer:', error);
+            return { success: false, error: error.message };
+        }
+    }
     async handleConsume(data, client) {
         try {
             const { roomId, transportId, producerId, rtpCapabilities } = data;
@@ -182,6 +200,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
     __metadata("design:returntype", Promise)
 ], VoiceGateway.prototype, "handleProduce", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('close-producer'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
+    __metadata("design:returntype", Promise)
+], VoiceGateway.prototype, "handleCloseProducer", null);
 __decorate([
     (0, websockets_1.SubscribeMessage)('consume'),
     __param(0, (0, websockets_1.MessageBody)()),

@@ -28,6 +28,7 @@ export declare class VoiceService {
         rtpParameters: RtpParameters;
     }>;
     leaveRoom(roomId: string, peerId: string): Promise<void>;
+    closeProducer(roomId: string, peerId: string, producerId: string): Promise<void>;
     getProducers(roomId: string, peerId: string): {
         peerId: string;
         producerId: string;

@@ -121,6 +121,18 @@ let VoiceService = VoiceService_1 = class VoiceService {
     async leaveRoom(roomId, peerId) {
         this.roomManager.removePeer(roomId, peerId);
     }
+    async closeProducer(roomId, peerId, producerId) {
+        const peer = this.roomManager.getPeer(roomId, peerId);
+        if (!peer) {
+            throw new Error('Peer not found');
+        }
+        const producer = peer.producers.get(producerId);
+        if (producer) {
+            producer.close();
+            peer.producers.delete(producerId);
+            this.logger.log(`Producer ${producerId} closed for peer ${peerId}`);
+        }
+    }
     getProducers(roomId, peerId) {
         const otherPeers = this.roomManager.getOtherPeers(roomId, peerId);
         const producers = [];

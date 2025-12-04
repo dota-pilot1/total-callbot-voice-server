@@ -16,5 +16,8 @@ export declare const mediasoupConfig: {
         }[];
         maxIncomingBitrate: number;
         initialAvailableOutgoingBitrate: number;
+        enableUdp: boolean;
+        enableTcp: boolean;
+        preferUdp: boolean;
     };
 };

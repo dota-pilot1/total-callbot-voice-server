@@ -27,12 +27,15 @@ let VoiceService = VoiceService_1 = class VoiceService {
         const room = await this.roomManager.getOrCreateRoom('default');
         return room.router.rtpCapabilities;
     }
-    async joinRoom(roomId, peerId, userId) {
+    async joinRoom(roomId, peerId, userId, userName) {
         const room = await this.roomManager.getOrCreateRoom(roomId);
-        const peer = this.roomManager.addPeer(roomId, peerId, userId);
+        const peer = this.roomManager.addPeer(roomId, peerId, userId, userName);
         return {
             rtpCapabilities: room.router.rtpCapabilities,
         };
+    }
+    getUserName(roomId, peerId) {
+        return this.roomManager.getUserName(roomId, peerId);
     }
     async createWebRtcTransport(roomId, peerId) {
         const room = this.roomManager.getRoom(roomId);
@@ -126,6 +129,8 @@ let VoiceService = VoiceService_1 = class VoiceService {
                 producers.push({
                     peerId: peer.id,
                     producerId: producer.id,
+                    userName: peer.userName,
+                    kind: producer.kind,
                 });
             });
         });

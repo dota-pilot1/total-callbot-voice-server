@@ -19,10 +19,12 @@ import type {
 } from 'mediasoup/types';
 
 @WebSocketGateway({
+  path: '/voice/socket.io',
   cors: {
     origin: [
       'http://localhost:5173',
       'http://localhost:5174',
+      'http://localhost:5175',
       'https://realtime-english-trainer.co.kr',
     ],
     credentials: true,
@@ -48,11 +50,15 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const roomId = this.socketToRoom.get(client.id);
     if (roomId) {
+      const userName = this.voiceService.getUserName(roomId, client.id);
       this.voiceService.leaveRoom(roomId, client.id);
       this.socketToRoom.delete(client.id);
 
       // Notify others in the room
-      client.to(roomId).emit('peer-left', { peerId: client.id });
+      client.to(roomId).emit('user-left', {
+        peerId: client.id,
+        userName,
+      });
     }
   }
 
@@ -92,16 +98,17 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('join-room')
   async handleJoinRoom(
     @MessageBody()
-    data: { roomId: string; userId: number },
+    data: { roomId: string; userId?: number; userName?: string },
     @ConnectedSocket() client: Socket,
   ) {
     try {
-      const { roomId, userId } = data;
+      const { roomId, userId = 0, userName = 'Guest' } = data;
 
       const result = await this.voiceService.joinRoom(
         roomId,
         client.id,
         userId,
+        userName,
       );
 
       // Join Socket.IO room
@@ -115,12 +122,19 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
 
       // Get existing producers
-      const producers = this.voiceService.getProducers(roomId, client.id);
+      const existingProducers = this.voiceService.getProducers(
+        roomId,
+        client.id,
+      );
+
+      this.logger.log(
+        `Room ${roomId} 입장: ${userName}, 기존 producer ${existingProducers.length}개`,
+      );
 
       return {
         success: true,
         rtpCapabilities: result.rtpCapabilities,
-        producers,
+        existingProducers,
       };
     } catch (error) {
       this.logger.error('Error joining room:', error);
@@ -198,6 +212,8 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.to(roomId).emit('new-producer', {
         peerId: client.id,
         producerId: result.producerId,
+        userName: this.voiceService.getUserName(roomId, client.id),
+        kind,
       });
 
       return { success: true, producerId: result.producerId };

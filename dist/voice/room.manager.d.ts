@@ -7,6 +7,7 @@ interface Room {
 interface Peer {
     id: string;
     userId: number;
+    userName: string;
     transports: Map<string, Transport>;
     producers: Map<string, Producer>;
     consumers: Map<string, Consumer>;
@@ -18,7 +19,8 @@ export declare class RoomManager {
     initialize(): Promise<void>;
     getOrCreateRoom(roomId: string): Promise<Room>;
     getRoom(roomId: string): Room | undefined;
-    addPeer(roomId: string, peerId: string, userId: number): Peer;
+    addPeer(roomId: string, peerId: string, userId: number, userName: string): Peer;
+    getUserName(roomId: string, peerId: string): string;
     removePeer(roomId: string, peerId: string): void;
     getPeer(roomId: string, peerId: string): Peer | undefined;
     getOtherPeers(roomId: string, peerId: string): Peer[];

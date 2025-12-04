@@ -16,17 +16,37 @@ exports.mediasoupConfig = {
                 clockRate: 48000,
                 channels: 2,
             },
+            {
+                kind: 'video',
+                mimeType: 'video/VP8',
+                clockRate: 90000,
+                parameters: {
+                    'x-google-start-bitrate': 1000,
+                },
+            },
+            {
+                kind: 'video',
+                mimeType: 'video/VP9',
+                clockRate: 90000,
+                parameters: {
+                    'profile-id': 2,
+                    'x-google-start-bitrate': 1000,
+                },
+            },
         ],
     },
     webRtcTransport: {
         listenIps: [
             {
                 ip: '0.0.0.0',
-                announcedIp: '127.0.0.1',
+                announcedIp: process.env.ANNOUNCED_IP || '172.30.1.46',
             },
         ],
         maxIncomingBitrate: 1500000,
         initialAvailableOutgoingBitrate: 1000000,
+        enableUdp: true,
+        enableTcp: true,
+        preferUdp: true,
     },
 };
 //# sourceMappingURL=mediasoup.config.js.map

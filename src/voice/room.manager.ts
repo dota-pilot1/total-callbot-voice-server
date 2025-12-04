@@ -18,6 +18,7 @@ interface Room {
 interface Peer {
   id: string;
   userId: number;
+  userName: string;
   transports: Map<string, Transport>;
   producers: Map<string, Producer>;
   consumers: Map<string, Consumer>;
@@ -73,7 +74,12 @@ export class RoomManager {
     return this.rooms.get(roomId);
   }
 
-  addPeer(roomId: string, peerId: string, userId: number): Peer {
+  addPeer(
+    roomId: string,
+    peerId: string,
+    userId: number,
+    userName: string,
+  ): Peer {
     const room = this.rooms.get(roomId);
     if (!room) {
       throw new Error('Room not found');
@@ -82,15 +88,21 @@ export class RoomManager {
     const peer: Peer = {
       id: peerId,
       userId,
+      userName,
       transports: new Map(),
       producers: new Map(),
       consumers: new Map(),
     };
 
     room.peers.set(peerId, peer);
-    this.logger.log(`Peer ${peerId} added to room ${roomId}`);
+    this.logger.log(`Peer ${peerId} (${userName}) added to room ${roomId}`);
 
     return peer;
+  }
+
+  getUserName(roomId: string, peerId: string): string {
+    const peer = this.getPeer(roomId, peerId);
+    return peer?.userName || 'Unknown';
   }
 
   removePeer(roomId: string, peerId: string) {

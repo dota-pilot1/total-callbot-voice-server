@@ -22,6 +22,23 @@ export const mediasoupConfig = {
         clockRate: 48000,
         channels: 2,
       },
+      {
+        kind: 'video',
+        mimeType: 'video/VP8',
+        clockRate: 90000,
+        parameters: {
+          'x-google-start-bitrate': 1000,
+        },
+      },
+      {
+        kind: 'video',
+        mimeType: 'video/VP9',
+        clockRate: 90000,
+        parameters: {
+          'profile-id': 2,
+          'x-google-start-bitrate': 1000,
+        },
+      },
     ] as RtpCodecCapability[],
   },
 
@@ -30,10 +47,13 @@ export const mediasoupConfig = {
     listenIps: [
       {
         ip: '0.0.0.0',
-        announcedIp: '127.0.0.1', // 로컬 개발용, 배포시 실제 공인 IP로 변경 필요
+        announcedIp: process.env.ANNOUNCED_IP || '172.30.1.46', // 로컬 개발용, 배포시 실제 공인 IP로 변경 필요
       },
     ],
     maxIncomingBitrate: 1500000,
     initialAvailableOutgoingBitrate: 1000000,
+    enableUdp: true,
+    enableTcp: true,
+    preferUdp: true,
   },
 };

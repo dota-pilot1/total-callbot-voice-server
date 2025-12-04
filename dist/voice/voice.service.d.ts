@@ -6,9 +6,10 @@ export declare class VoiceService {
     constructor(roomManager: RoomManager);
     onModuleInit(): Promise<void>;
     getRouterRtpCapabilities(): Promise<RtpCapabilities>;
-    joinRoom(roomId: string, peerId: string, userId: number): Promise<{
+    joinRoom(roomId: string, peerId: string, userId: number, userName: string): Promise<{
         rtpCapabilities: RtpCapabilities;
     }>;
+    getUserName(roomId: string, peerId: string): string;
     createWebRtcTransport(roomId: string, peerId: string): Promise<{
         id: string;
         iceParameters: import("mediasoup/types").IceParameters;
@@ -30,5 +31,7 @@ export declare class VoiceService {
     getProducers(roomId: string, peerId: string): {
         peerId: string;
         producerId: string;
+        userName: string;
+        kind: MediaKind;
     }[];
 }

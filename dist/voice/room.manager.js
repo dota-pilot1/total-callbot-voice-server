@@ -83,7 +83,7 @@ let RoomManager = RoomManager_1 = class RoomManager {
     getRoom(roomId) {
         return this.rooms.get(roomId);
     }
-    addPeer(roomId, peerId, userId) {
+    addPeer(roomId, peerId, userId, userName) {
         const room = this.rooms.get(roomId);
         if (!room) {
             throw new Error('Room not found');
@@ -91,13 +91,18 @@ let RoomManager = RoomManager_1 = class RoomManager {
         const peer = {
             id: peerId,
             userId,
+            userName,
             transports: new Map(),
             producers: new Map(),
             consumers: new Map(),
         };
         room.peers.set(peerId, peer);
-        this.logger.log(`Peer ${peerId} added to room ${roomId}`);
+        this.logger.log(`Peer ${peerId} (${userName}) added to room ${roomId}`);
         return peer;
+    }
+    getUserName(roomId, peerId) {
+        const peer = this.getPeer(roomId, peerId);
+        return peer?.userName || 'Unknown';
     }
     removePeer(roomId, peerId) {
         const room = this.rooms.get(roomId);

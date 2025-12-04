@@ -17,20 +17,23 @@ export declare class VoiceGateway implements OnGatewayConnection, OnGatewayDisco
     }>;
     handleJoinRoom(data: {
         roomId: string;
-        userId: number;
+        userId?: number;
+        userName?: string;
     }, client: Socket): Promise<{
         success: boolean;
         rtpCapabilities: RtpCapabilities;
-        producers: {
+        existingProducers: {
             peerId: string;
             producerId: string;
+            userName: string;
+            kind: MediaKind;
         }[];
         error?: undefined;
     } | {
         success: boolean;
         error: any;
         rtpCapabilities?: undefined;
-        producers?: undefined;
+        existingProducers?: undefined;
     }>;
     handleCreateTransport(data: {
         roomId: string;

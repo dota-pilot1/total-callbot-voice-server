@@ -33,9 +33,13 @@ let VoiceGateway = VoiceGateway_1 = class VoiceGateway {
         this.logger.log(`Client disconnected: ${client.id}`);
         const roomId = this.socketToRoom.get(client.id);
         if (roomId) {
+            const userName = this.voiceService.getUserName(roomId, client.id);
             this.voiceService.leaveRoom(roomId, client.id);
             this.socketToRoom.delete(client.id);
-            client.to(roomId).emit('peer-left', { peerId: client.id });
+            client.to(roomId).emit('user-left', {
+                peerId: client.id,
+                userName,
+            });
         }
     }
     async handleGetRouterRtpCapabilities(client, data, callback) {
@@ -60,19 +64,20 @@ let VoiceGateway = VoiceGateway_1 = class VoiceGateway {
     }
     async handleJoinRoom(data, client) {
         try {
-            const { roomId, userId } = data;
-            const result = await this.voiceService.joinRoom(roomId, client.id, userId);
+            const { roomId, userId = 0, userName = 'Guest' } = data;
+            const result = await this.voiceService.joinRoom(roomId, client.id, userId, userName);
             client.join(roomId);
             this.socketToRoom.set(client.id, roomId);
             client.to(roomId).emit('peer-joined', {
                 peerId: client.id,
                 userId,
             });
-            const producers = this.voiceService.getProducers(roomId, client.id);
+            const existingProducers = this.voiceService.getProducers(roomId, client.id);
+            this.logger.log(`Room ${roomId} 입장: ${userName}, 기존 producer ${existingProducers.length}개`);
             return {
                 success: true,
                 rtpCapabilities: result.rtpCapabilities,
-                producers,
+                existingProducers,
             };
         }
         catch (error) {
@@ -109,6 +114,8 @@ let VoiceGateway = VoiceGateway_1 = class VoiceGateway {
             client.to(roomId).emit('new-producer', {
                 peerId: client.id,
                 producerId: result.producerId,
+                userName: this.voiceService.getUserName(roomId, client.id),
+                kind,
             });
             return { success: true, producerId: result.producerId };
         }
@@ -185,10 +192,12 @@ __decorate([
 ], VoiceGateway.prototype, "handleConsume", null);
 exports.VoiceGateway = VoiceGateway = VoiceGateway_1 = __decorate([
     (0, websockets_1.WebSocketGateway)({
+        path: '/voice/socket.io',
         cors: {
             origin: [
                 'http://localhost:5173',
                 'http://localhost:5174',
+                'http://localhost:5175',
                 'https://realtime-english-trainer.co.kr',
             ],
             credentials: true,

@@ -47,7 +47,7 @@ export const mediasoupConfig = {
     listenIps: [
       {
         ip: '0.0.0.0',
-        announcedIp: process.env.ANNOUNCED_IP || '172.30.1.46', // 로컬 개발용, 배포시 실제 공인 IP로 변경 필요
+        announcedIp: process.env.ANNOUNCED_IP || '127.0.0.1', // 로컬 개발용
       },
     ],
     maxIncomingBitrate: 1500000,

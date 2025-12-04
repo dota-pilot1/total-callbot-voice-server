@@ -39,7 +39,7 @@ exports.mediasoupConfig = {
         listenIps: [
             {
                 ip: '0.0.0.0',
-                announcedIp: process.env.ANNOUNCED_IP || '172.30.1.46',
+                announcedIp: process.env.ANNOUNCED_IP || '127.0.0.1',
             },
         ],
         maxIncomingBitrate: 1500000,

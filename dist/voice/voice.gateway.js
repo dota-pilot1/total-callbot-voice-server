@@ -153,6 +153,17 @@ let VoiceGateway = VoiceGateway_1 = class VoiceGateway {
             return { success: false, error: error.message };
         }
     }
+    async handleResumeConsumer(data, client) {
+        try {
+            const { roomId, consumerId } = data;
+            const result = await this.voiceService.resumeConsumer(roomId, client.id, consumerId);
+            return { success: true, ...result };
+        }
+        catch (error) {
+            this.logger.error('Error resuming consumer:', error);
+            return { success: false, error: error.message };
+        }
+    }
 };
 exports.VoiceGateway = VoiceGateway;
 __decorate([
@@ -216,6 +227,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
     __metadata("design:returntype", Promise)
 ], VoiceGateway.prototype, "handleConsume", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('resume-consumer'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
+    __metadata("design:returntype", Promise)
+], VoiceGateway.prototype, "handleResumeConsumer", null);
 exports.VoiceGateway = VoiceGateway = VoiceGateway_1 = __decorate([
     (0, websockets_1.WebSocketGateway)({
         path: '/voice/socket.io',

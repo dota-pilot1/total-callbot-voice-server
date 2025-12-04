@@ -281,4 +281,28 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return { success: false, error: error.message };
     }
   }
+
+  @SubscribeMessage('resume-consumer')
+  async handleResumeConsumer(
+    @MessageBody()
+    data: {
+      roomId: string;
+      consumerId: string;
+    },
+    @ConnectedSocket() client: Socket,
+  ) {
+    try {
+      const { roomId, consumerId } = data;
+      const result = await this.voiceService.resumeConsumer(
+        roomId,
+        client.id,
+        consumerId,
+      );
+
+      return { success: true, ...result };
+    } catch (error) {
+      this.logger.error('Error resuming consumer:', error);
+      return { success: false, error: error.message };
+    }
+  }
 }

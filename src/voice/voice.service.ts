@@ -154,7 +154,7 @@ export class VoiceService {
     const consumer = await transport.consume({
       producerId,
       rtpCapabilities,
-      paused: false,
+      paused: true, // 처음에 paused로 생성, 클라이언트가 준비되면 resume
     });
 
     peer.consumers.set(consumer.id, consumer);
@@ -165,6 +165,21 @@ export class VoiceService {
       kind: consumer.kind,
       rtpParameters: consumer.rtpParameters,
     };
+  }
+
+  async resumeConsumer(roomId: string, peerId: string, consumerId: string) {
+    const peer = this.roomManager.getPeer(roomId, peerId);
+    if (!peer) {
+      throw new Error('Peer not found');
+    }
+
+    const consumer = peer.consumers.get(consumerId);
+    if (!consumer) {
+      throw new Error('Consumer not found');
+    }
+
+    await consumer.resume();
+    return { resumed: true };
   }
 
   async leaveRoom(roomId: string, peerId: string) {

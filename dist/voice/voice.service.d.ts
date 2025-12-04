@@ -27,6 +27,9 @@ export declare class VoiceService {
         kind: MediaKind;
         rtpParameters: RtpParameters;
     }>;
+    resumeConsumer(roomId: string, peerId: string, consumerId: string): Promise<{
+        resumed: boolean;
+    }>;
     leaveRoom(roomId: string, peerId: string): Promise<void>;
     closeProducer(roomId: string, peerId: string, producerId: string): Promise<void>;
     getProducers(roomId: string, peerId: string): {

@@ -108,7 +108,7 @@ let VoiceService = VoiceService_1 = class VoiceService {
         const consumer = await transport.consume({
             producerId,
             rtpCapabilities,
-            paused: false,
+            paused: true,
         });
         peer.consumers.set(consumer.id, consumer);
         return {
@@ -117,6 +117,18 @@ let VoiceService = VoiceService_1 = class VoiceService {
             kind: consumer.kind,
             rtpParameters: consumer.rtpParameters,
         };
+    }
+    async resumeConsumer(roomId, peerId, consumerId) {
+        const peer = this.roomManager.getPeer(roomId, peerId);
+        if (!peer) {
+            throw new Error('Peer not found');
+        }
+        const consumer = peer.consumers.get(consumerId);
+        if (!consumer) {
+            throw new Error('Consumer not found');
+        }
+        await consumer.resume();
+        return { resumed: true };
     }
     async leaveRoom(roomId, peerId) {
         this.roomManager.removePeer(roomId, peerId);

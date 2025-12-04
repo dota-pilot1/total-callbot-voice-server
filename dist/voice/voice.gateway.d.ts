@@ -99,4 +99,15 @@ export declare class VoiceGateway implements OnGatewayConnection, OnGatewayDisco
         success: boolean;
         error: any;
     }>;
+    handleResumeConsumer(data: {
+        roomId: string;
+        consumerId: string;
+    }, client: Socket): Promise<{
+        resumed: boolean;
+        success: boolean;
+        error?: undefined;
+    } | {
+        success: boolean;
+        error: any;
+    }>;
 }

@@ -171,10 +171,12 @@ __decorate([
 ], WhiteboardGateway.prototype, "handleSync", null);
 exports.WhiteboardGateway = WhiteboardGateway = WhiteboardGateway_1 = __decorate([
     (0, websockets_1.WebSocketGateway)({
+        path: '/voice/socket.io',
         cors: {
             origin: [
                 'http://localhost:5173',
                 'http://localhost:5174',
+                'http://localhost:5175',
                 'https://realtime-english-trainer.co.kr',
             ],
             credentials: true,

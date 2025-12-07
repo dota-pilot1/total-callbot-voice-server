@@ -193,4 +193,21 @@ export class WhiteboardGateway
     );
     return { success: true };
   }
+
+  @SubscribeMessage('wb-toggle')
+  handleToggle(
+    @MessageBody() payload: { isOpen: boolean; userName: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const roomId = this.socketToRoom.get(client.id);
+    if (!roomId) return { success: false, error: 'Not in a room' };
+
+    // 다른 참여자에게 칠판 열기/닫기 브로드캐스트
+    client.to(`wb-${roomId}`).emit('wb-toggle', payload);
+
+    this.logger.log(
+      `[Whiteboard] Toggle ${payload.isOpen ? 'open' : 'close'} by ${payload.userName} in room ${roomId}`,
+    );
+    return { success: true };
+  }
 }

@@ -60,5 +60,15 @@ export declare class WhiteboardGateway implements OnGatewayConnection, OnGateway
         success: boolean;
         error?: undefined;
     };
+    handleToggle(payload: {
+        isOpen: boolean;
+        userName: string;
+    }, client: Socket): {
+        success: boolean;
+        error: string;
+    } | {
+        success: boolean;
+        error?: undefined;
+    };
 }
 export {};

@@ -109,6 +109,14 @@ let WhiteboardGateway = WhiteboardGateway_1 = class WhiteboardGateway {
         this.logger.log(`[Whiteboard] Canvas synced in room ${roomId}, objects: ${payload.canvasState.length}`);
         return { success: true };
     }
+    handleToggle(payload, client) {
+        const roomId = this.socketToRoom.get(client.id);
+        if (!roomId)
+            return { success: false, error: 'Not in a room' };
+        client.to(`wb-${roomId}`).emit('wb-toggle', payload);
+        this.logger.log(`[Whiteboard] Toggle ${payload.isOpen ? 'open' : 'close'} by ${payload.userName} in room ${roomId}`);
+        return { success: true };
+    }
 };
 exports.WhiteboardGateway = WhiteboardGateway;
 __decorate([
@@ -169,6 +177,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
     __metadata("design:returntype", void 0)
 ], WhiteboardGateway.prototype, "handleSync", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('wb-toggle'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
+    __metadata("design:returntype", void 0)
+], WhiteboardGateway.prototype, "handleToggle", null);
 exports.WhiteboardGateway = WhiteboardGateway = WhiteboardGateway_1 = __decorate([
     (0, websockets_1.WebSocketGateway)({
         path: '/voice/socket.io',

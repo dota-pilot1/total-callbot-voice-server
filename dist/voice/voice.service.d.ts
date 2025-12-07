@@ -10,6 +10,8 @@ export declare class VoiceService {
         rtpCapabilities: RtpCapabilities;
     }>;
     getUserName(roomId: string, peerId: string): string;
+    updatePeerSlotIndex(roomId: string, peerId: string, slotIndex: number): void;
+    getPeerSlotIndex(roomId: string, peerId: string): number;
     createWebRtcTransport(roomId: string, peerId: string): Promise<{
         id: string;
         iceParameters: import("mediasoup/types").IceParameters;
@@ -37,5 +39,6 @@ export declare class VoiceService {
         producerId: string;
         userName: string;
         kind: MediaKind;
+        slotIndex: number;
     }[];
 }

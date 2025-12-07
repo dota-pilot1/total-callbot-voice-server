@@ -83,22 +83,46 @@ let RoomManager = RoomManager_1 = class RoomManager {
     getRoom(roomId) {
         return this.rooms.get(roomId);
     }
-    addPeer(roomId, peerId, userId, userName) {
+    addPeer(roomId, peerId, userId, userName, slotIndex = -1) {
         const room = this.rooms.get(roomId);
         if (!room) {
             throw new Error('Room not found');
         }
+        const assignedSlotIndex = slotIndex >= 0 ? slotIndex : this.findNextAvailableSlotIndex(roomId);
         const peer = {
             id: peerId,
             userId,
             userName,
+            slotIndex: assignedSlotIndex,
             transports: new Map(),
             producers: new Map(),
             consumers: new Map(),
         };
         room.peers.set(peerId, peer);
-        this.logger.log(`Peer ${peerId} (${userName}) added to room ${roomId}`);
+        this.logger.log(`Peer ${peerId} (${userName}) added to room ${roomId} at slot ${assignedSlotIndex}`);
         return peer;
+    }
+    findNextAvailableSlotIndex(roomId) {
+        const room = this.rooms.get(roomId);
+        if (!room)
+            return 0;
+        const usedIndices = new Set(Array.from(room.peers.values()).map((p) => p.slotIndex));
+        for (let i = 0; i < 4; i++) {
+            if (!usedIndices.has(i))
+                return i;
+        }
+        return 0;
+    }
+    updatePeerSlotIndex(roomId, peerId, slotIndex) {
+        const peer = this.getPeer(roomId, peerId);
+        if (peer) {
+            peer.slotIndex = slotIndex;
+            this.logger.log(`Peer ${peerId} slot updated to ${slotIndex}`);
+        }
+    }
+    getPeerSlotIndex(roomId, peerId) {
+        const peer = this.getPeer(roomId, peerId);
+        return peer?.slotIndex ?? -1;
     }
     getUserName(roomId, peerId) {
         const peer = this.getPeer(roomId, peerId);

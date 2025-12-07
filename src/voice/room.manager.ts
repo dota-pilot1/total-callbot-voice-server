@@ -19,6 +19,7 @@ interface Peer {
   id: string;
   userId: number;
   userName: string;
+  slotIndex: number;
   transports: Map<string, Transport>;
   producers: Map<string, Producer>;
   consumers: Map<string, Consumer>;
@@ -79,25 +80,59 @@ export class RoomManager {
     peerId: string,
     userId: number,
     userName: string,
+    slotIndex: number = -1,
   ): Peer {
     const room = this.rooms.get(roomId);
     if (!room) {
       throw new Error('Room not found');
     }
 
+    // slotIndex가 -1이면 자동으로 빈 슬롯 찾기
+    const assignedSlotIndex =
+      slotIndex >= 0 ? slotIndex : this.findNextAvailableSlotIndex(roomId);
+
     const peer: Peer = {
       id: peerId,
       userId,
       userName,
+      slotIndex: assignedSlotIndex,
       transports: new Map(),
       producers: new Map(),
       consumers: new Map(),
     };
 
     room.peers.set(peerId, peer);
-    this.logger.log(`Peer ${peerId} (${userName}) added to room ${roomId}`);
+    this.logger.log(
+      `Peer ${peerId} (${userName}) added to room ${roomId} at slot ${assignedSlotIndex}`,
+    );
 
     return peer;
+  }
+
+  private findNextAvailableSlotIndex(roomId: string): number {
+    const room = this.rooms.get(roomId);
+    if (!room) return 0;
+
+    const usedIndices = new Set(
+      Array.from(room.peers.values()).map((p) => p.slotIndex),
+    );
+    for (let i = 0; i < 4; i++) {
+      if (!usedIndices.has(i)) return i;
+    }
+    return 0;
+  }
+
+  updatePeerSlotIndex(roomId: string, peerId: string, slotIndex: number): void {
+    const peer = this.getPeer(roomId, peerId);
+    if (peer) {
+      peer.slotIndex = slotIndex;
+      this.logger.log(`Peer ${peerId} slot updated to ${slotIndex}`);
+    }
+  }
+
+  getPeerSlotIndex(roomId: string, peerId: string): number {
+    const peer = this.getPeer(roomId, peerId);
+    return peer?.slotIndex ?? -1;
   }
 
   getUserName(roomId: string, peerId: string): string {

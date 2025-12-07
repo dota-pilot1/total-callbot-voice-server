@@ -27,6 +27,7 @@ export declare class VoiceGateway implements OnGatewayConnection, OnGatewayDisco
             producerId: string;
             userName: string;
             kind: MediaKind;
+            slotIndex: number;
         }[];
         error?: undefined;
     } | {
@@ -64,14 +65,17 @@ export declare class VoiceGateway implements OnGatewayConnection, OnGatewayDisco
         transportId: string;
         kind: MediaKind;
         rtpParameters: RtpParameters;
+        slotIndex?: number;
     }, client: Socket): Promise<{
         success: boolean;
         producerId: string;
+        slotIndex: number;
         error?: undefined;
     } | {
         success: boolean;
         error: any;
         producerId?: undefined;
+        slotIndex?: undefined;
     }>;
     handleCloseProducer(data: {
         roomId: string;

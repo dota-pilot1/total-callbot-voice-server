@@ -195,11 +195,12 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
       transportId: string;
       kind: MediaKind;
       rtpParameters: RtpParameters;
+      slotIndex?: number;
     },
     @ConnectedSocket() client: Socket,
   ) {
     try {
-      const { roomId, transportId, kind, rtpParameters } = data;
+      const { roomId, transportId, kind, rtpParameters, slotIndex } = data;
       const result = await this.voiceService.produce(
         roomId,
         client.id,
@@ -208,15 +209,30 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
         rtpParameters,
       );
 
+      // slotIndex가 있으면 업데이트
+      if (slotIndex !== undefined && slotIndex >= 0) {
+        this.voiceService.updatePeerSlotIndex(roomId, client.id, slotIndex);
+      }
+
+      const peerSlotIndex = this.voiceService.getPeerSlotIndex(
+        roomId,
+        client.id,
+      );
+
       // Notify other peers
       client.to(roomId).emit('new-producer', {
         peerId: client.id,
         producerId: result.producerId,
         userName: this.voiceService.getUserName(roomId, client.id),
         kind,
+        slotIndex: peerSlotIndex,
       });
 
-      return { success: true, producerId: result.producerId };
+      return {
+        success: true,
+        producerId: result.producerId,
+        slotIndex: peerSlotIndex,
+      };
     } catch (error) {
       this.logger.error('Error producing:', error);
       return { success: false, error: error.message };

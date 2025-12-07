@@ -109,15 +109,24 @@ let VoiceGateway = VoiceGateway_1 = class VoiceGateway {
     }
     async handleProduce(data, client) {
         try {
-            const { roomId, transportId, kind, rtpParameters } = data;
+            const { roomId, transportId, kind, rtpParameters, slotIndex } = data;
             const result = await this.voiceService.produce(roomId, client.id, transportId, kind, rtpParameters);
+            if (slotIndex !== undefined && slotIndex >= 0) {
+                this.voiceService.updatePeerSlotIndex(roomId, client.id, slotIndex);
+            }
+            const peerSlotIndex = this.voiceService.getPeerSlotIndex(roomId, client.id);
             client.to(roomId).emit('new-producer', {
                 peerId: client.id,
                 producerId: result.producerId,
                 userName: this.voiceService.getUserName(roomId, client.id),
                 kind,
+                slotIndex: peerSlotIndex,
             });
-            return { success: true, producerId: result.producerId };
+            return {
+                success: true,
+                producerId: result.producerId,
+                slotIndex: peerSlotIndex,
+            };
         }
         catch (error) {
             this.logger.error('Error producing:', error);

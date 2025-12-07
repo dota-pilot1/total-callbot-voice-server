@@ -42,6 +42,14 @@ export class VoiceService {
     return this.roomManager.getUserName(roomId, peerId);
   }
 
+  updatePeerSlotIndex(roomId: string, peerId: string, slotIndex: number): void {
+    this.roomManager.updatePeerSlotIndex(roomId, peerId, slotIndex);
+  }
+
+  getPeerSlotIndex(roomId: string, peerId: string): number {
+    return this.roomManager.getPeerSlotIndex(roomId, peerId);
+  }
+
   async createWebRtcTransport(roomId: string, peerId: string) {
     const room = this.roomManager.getRoom(roomId);
     if (!room) {
@@ -207,6 +215,7 @@ export class VoiceService {
       producerId: string;
       userName: string;
       kind: MediaKind;
+      slotIndex: number;
     }> = [];
 
     otherPeers.forEach((peer) => {
@@ -216,6 +225,7 @@ export class VoiceService {
           producerId: producer.id,
           userName: peer.userName,
           kind: producer.kind,
+          slotIndex: peer.slotIndex,
         });
       });
     });

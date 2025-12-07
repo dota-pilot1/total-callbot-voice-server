@@ -37,6 +37,12 @@ let VoiceService = VoiceService_1 = class VoiceService {
     getUserName(roomId, peerId) {
         return this.roomManager.getUserName(roomId, peerId);
     }
+    updatePeerSlotIndex(roomId, peerId, slotIndex) {
+        this.roomManager.updatePeerSlotIndex(roomId, peerId, slotIndex);
+    }
+    getPeerSlotIndex(roomId, peerId) {
+        return this.roomManager.getPeerSlotIndex(roomId, peerId);
+    }
     async createWebRtcTransport(roomId, peerId) {
         const room = this.roomManager.getRoom(roomId);
         if (!room) {
@@ -155,6 +161,7 @@ let VoiceService = VoiceService_1 = class VoiceService {
                     producerId: producer.id,
                     userName: peer.userName,
                     kind: producer.kind,
+                    slotIndex: peer.slotIndex,
                 });
             });
         });

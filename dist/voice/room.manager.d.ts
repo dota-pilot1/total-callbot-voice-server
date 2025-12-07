@@ -8,6 +8,7 @@ interface Peer {
     id: string;
     userId: number;
     userName: string;
+    slotIndex: number;
     transports: Map<string, Transport>;
     producers: Map<string, Producer>;
     consumers: Map<string, Consumer>;
@@ -19,7 +20,10 @@ export declare class RoomManager {
     initialize(): Promise<void>;
     getOrCreateRoom(roomId: string): Promise<Room>;
     getRoom(roomId: string): Room | undefined;
-    addPeer(roomId: string, peerId: string, userId: number, userName: string): Peer;
+    addPeer(roomId: string, peerId: string, userId: number, userName: string, slotIndex?: number): Peer;
+    private findNextAvailableSlotIndex;
+    updatePeerSlotIndex(roomId: string, peerId: string, slotIndex: number): void;
+    getPeerSlotIndex(roomId: string, peerId: string): number;
     getUserName(roomId: string, peerId: string): string;
     removePeer(roomId: string, peerId: string): void;
     getPeer(roomId: string, peerId: string): Peer | undefined;
